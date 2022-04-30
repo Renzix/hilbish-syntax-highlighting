@@ -1,5 +1,5 @@
 local commander = require 'commander'
 
-commander.register('hello', function()
+commander.register('hi', function()
 	print 'Hello world!'
 end)
