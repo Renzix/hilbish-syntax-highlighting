@@ -2,12 +2,27 @@ local colors = require "lunacolors"
 
 local syntax = {}
 
+function syntax.contains(table, element)
+  for _, value in pairs(table) do
+    if value == element then
+      return true
+    end
+  end
+  return false
+end
+
 function syntax.is_cmd(str)
   if hilbish.which(str) ~= nil then
     return true
-  else
-    return false
   end
+
+  -- i dont know how to see what stuff is buildin keywords so lets just use a
+  -- raw table idk
+  local keywords = { "cd", "exit", "doc", "guide", "cdr" }
+  if syntax.contains(keywords, str) then
+     return true
+   end
+  return false
 end
 
 function syntax.is_sh_str(str)
@@ -26,7 +41,7 @@ function syntax.sh(str)
   end
   -- strings should be yellow?
   -- skip first word
-  local after_first_word = str:match(" (.*)")
+  local after_first_word = str:match("( .*)")
   if after_first_word == nil then
     return str
   end
