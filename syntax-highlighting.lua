@@ -81,7 +81,7 @@ function syntax.sh(str)
   for _, match in ipairs(syntax.is_sh_str(after_first_word)) do
     for index, val in syntax.findall(str, match) do
       -- offset because str above doesnt change which is dumb
-      local offset = (index-1)*9  -- i hate this @TODO(Renzix): fix
+      local offset = (index-1)*(string.len(colors.format("{yellow}{white}"))-4)  -- i hate this @TODO(Renzix): fix
       if match ~= nil then
         str = colors.format(str:sub(0, val.b-1+offset) .. "{yellow}" .. match .. "{white}" .. str:sub(val.f+1+offset))
       end
@@ -112,7 +112,7 @@ function syntax.lua(str)
   for _, keyword in ipairs(lua_keywords) do
     for index, val in syntax.findall(str, keyword) do
       -- offset because str above doesnt change which is dumb
-      local offset = (index-1)*9  -- i hate this @TODO(Renzix): fix
+      local offset = (index-1)*(string.len(colors.format("{yellow}{white}"))-4)  -- i hate this @TODO(Renzix): fix
       if keyword ~= nil then
         str = colors.format(str:sub(0, val.b-1+offset) .. "{magenta}" .. keyword .. "{white}" .. str:sub(val.f+1+offset))
       end
