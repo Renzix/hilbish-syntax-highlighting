@@ -11,6 +11,7 @@ function syntax.contains(table, element)
   return false
 end
 
+local sh_keywords = { "cd", "exit", "doc", "guide", "cdr" }
 function syntax.is_cmd(str)
   if hilbish.which(str) ~= nil then
     return true
@@ -18,8 +19,7 @@ function syntax.is_cmd(str)
 
   -- i dont know how to see what stuff is buildin keywords so lets just use a
   -- raw table idk
-  local keywords = { "cd", "exit", "doc", "guide", "cdr" }
-  if syntax.contains(keywords, str) then
+  if syntax.contains(sh_keywords, str) then
      return true
    end
   return false
@@ -38,7 +38,7 @@ function syntax.is_sh_str(str)
     if current_quote ~= nil then
       instr = instr .. ch
     end
-    if prev ~= "\\" then
+    if (ch == "'" or ch == '"') and  prev ~= "\\" then
       if current_quote == ch then
         -- if you find ending quote insert the currently generated string into
         -- the ret table
@@ -55,14 +55,10 @@ function syntax.is_sh_str(str)
   return ret
 end
 
--- function syntax.is_sh_str(str)
---   return str:gmatch('[^\\](".-[^\\]")')
--- end
-
 function syntax.sh(str)
   -- return green if first word is valid, else return red for said word
   local first_word = str:gmatch("(.-) ")() or str
-  local _, f = str:find(first_word)
+  local b, f = str:find(first_word)
   -- either replace it with green or red
   if syntax.is_cmd(first_word) then
     str = colors.format("{green}" .. first_word .. "{white}" .. str:sub(f+1))
@@ -76,10 +72,45 @@ function syntax.sh(str)
     return str
   end
   -- loop through all strings and make them yellow
+
   for _, match in ipairs(syntax.is_sh_str(after_first_word)) do
-    local b, f = str:find(match)
-    if match ~= nil then
-      str = colors.format(str:sub(0, b-1) .. "{yellow}" .. match .. "{white}" .. str:sub(f+1))
+    for index, val in syntax.findall(str, match) do
+      -- offset because str above doesnt change which is dumb
+      local offset = (index-1)*9  -- i hate this @TODO(Renzix): fix
+      if match ~= nil then
+        str = colors.format(str:sub(0, val.b-1+offset) .. "{yellow}" .. match .. "{white}" .. str:sub(val.f+1+offset))
+      end
+    end
+  end
+
+  return str
+end
+
+function syntax.findall(str, match)
+  local b = 0
+  local f = -1
+  local index = 0
+  return function()
+    b, f = string.find(str, match, f+1)
+    if b == nil then
+      return nil
+    end
+    index=index+1
+    return index, {b=b, f=f}
+  end
+end
+
+local lua_keywords = {"and", "break", "do", "else", "elseif", "end", "false",
+                      "for", "function", "if","in", "local", "nil", "not", "or",
+                      "repeat","return","then","true", "until","while"}
+function syntax.lua(str)
+  for _, keyword in ipairs(lua_keywords) do
+    for index, val in syntax.findall(str, keyword) do
+      -- offset because str above doesnt change which is dumb
+      local offset = (index-1)*9  -- i hate this @TODO(Renzix): fix
+      if keyword ~= nil then
+        str = colors.format(str:sub(0, val.b-1+offset) .. "{magenta}" .. keyword .. "{white}" .. str:sub(val.f+1+offset))
+      end
     end
   end
 
