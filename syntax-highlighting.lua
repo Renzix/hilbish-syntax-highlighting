@@ -1,3 +1,7 @@
+-- This Source Code Form is subject to the terms of the Mozilla Public
+-- License, v. 2.0. If a copy of the MPL was not distributed with this
+-- file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 local colors = require "lunacolors"
 
 local syntax = {}
@@ -11,7 +15,8 @@ function syntax.contains(table, element)
   return false
 end
 
-local sh_keywords = { "cd", "exit", "doc", "guide", "cdr" }
+local sh_keywords = { "cd", "exit", "doc", "guide", "cdr", "for", "if" }
+
 function syntax.is_cmd(str)
   if hilbish.which(str) ~= nil then
     return true
