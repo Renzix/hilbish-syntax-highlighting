@@ -79,29 +79,28 @@ function syntax.sh(str)
   -- loop through all strings and make them yellow
 
   for _, match in ipairs(syntax.is_sh_str(after_first_word)) do
-    for index, val in syntax.findall(str, match) do
-      -- offset because str above doesnt change which is dumb
-      local offset = (index-1)*(string.len(colors.format("{yellow}{white}"))-4)  -- i hate this @TODO(Renzix): fix
+    local findnext = syntax.findall(match)
+    local val = findnext(str)
+    while val ~= nil do
       if match ~= nil then
-        str = colors.format(str:sub(0, val.b-1+offset) .. "{yellow}" .. match .. "{white}" .. str:sub(val.f+1+offset))
+        str = colors.format(str:sub(0, val.b-1) .. "{yellow}" .. match .. "{white}" .. str:sub(val.f+1))
       end
+      val = findnext(str)
     end
   end
 
   return str
 end
 
-function syntax.findall(str, match)
+function syntax.findall(match)
   local b = 0
   local f = -1
-  local index = 0
-  return function()
+  return function(str)
     b, f = string.find(str, match, f+1)
     if b == nil then
       return nil
     end
-    index=index+1
-    return index, {b=b, f=f}
+    return {b=b, f=f}
   end
 end
 
@@ -110,12 +109,13 @@ local lua_keywords = {"and", "break", "do", "else", "elseif", "end", "false",
                       "repeat","return","then","true", "until","while"}
 function syntax.lua(str)
   for _, keyword in ipairs(lua_keywords) do
-    for index, val in syntax.findall(str, keyword) do
-      -- offset because str above doesnt change which is dumb
-      local offset = (index-1)*(string.len(colors.format("{yellow}{white}"))-4)  -- i hate this @TODO(Renzix): fix
+    local findnext = syntax.findall(keyword)
+    local val = findnext(str)
+    while val ~= nil do
       if keyword ~= nil then
-        str = colors.format(str:sub(0, val.b-1+offset) .. "{magenta}" .. keyword .. "{white}" .. str:sub(val.f+1+offset))
+        str = colors.format(str:sub(0, val.b-1) .. "{magenta}" .. keyword .. "{white}" .. str:sub(val.f+1))
       end
+      val = findnext(str)
     end
   end
 
