@@ -25,9 +25,39 @@ function syntax.is_cmd(str)
   return false
 end
 
+-- this could prob be 10x better with iterators
 function syntax.is_sh_str(str)
-  return str:gmatch('[^\\](".-[^\\]")')
+  local current_quote = nil
+  local instr = ""
+  local ret = {}
+  -- for each char in str
+  for i = 1, #str do
+    local ch = str:sub(i,i)
+    local prev = str:sub(i-1,i-1)
+    -- store string if currently inside a quote
+    if current_quote ~= nil then
+      instr = instr .. ch
+    end
+    if prev ~= "\\" then
+      if current_quote == ch then
+        -- if you find ending quote insert the currently generated string into
+        -- the ret table
+        current_quote = nil
+        table.insert(ret,instr)
+        instr = ""
+      elseif current_quote == nil then
+        -- if you find beginning quote then start storing the characters
+        current_quote = ch
+        instr = instr .. ch
+      end
+    end
+  end
+  return ret
 end
+
+-- function syntax.is_sh_str(str)
+--   return str:gmatch('[^\\](".-[^\\]")')
+-- end
 
 function syntax.sh(str)
   -- return green if first word is valid, else return red for said word
@@ -39,13 +69,14 @@ function syntax.sh(str)
   else
     str = colors.format("{red}" .. first_word .. "{white}" .. str:sub(f+1))
   end
-  -- strings should be yellow?
+  -- strings should be yellow
   -- skip first word
   local after_first_word = str:match("( .*)")
   if after_first_word == nil then
     return str
   end
-  for match in syntax.is_sh_str(after_first_word) do
+  -- loop through all strings and make them yellow
+  for _, match in ipairs(syntax.is_sh_str(after_first_word)) do
     local b, f = str:find(match)
     if match ~= nil then
       str = colors.format(str:sub(0, b-1) .. "{yellow}" .. match .. "{white}" .. str:sub(f+1))
