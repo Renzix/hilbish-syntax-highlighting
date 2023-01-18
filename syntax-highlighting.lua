@@ -85,7 +85,7 @@ function syntax.sh(str)
       if match ~= nil then
         str = colors.format(str:sub(0, val.b-1) .. "{yellow}" .. match .. "{white}" .. str:sub(val.f+1))
       end
-      val = findnext(str)
+      val = findnext(str:sub(val.f+1))
     end
   end
 
